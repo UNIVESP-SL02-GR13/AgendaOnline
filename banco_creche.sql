@@ -1,63 +1,81 @@
--- Active: 1744119904384@@localhost@3306@creche
-CREATE TABLE crianca (
-    crianca_id INT PRIMARY KEY AUTO_INCREMENT,
-    nome_da_crianca VARCHAR(100) NOT NULL,
+--DROP TABLE public.registro_diario;
+--DROP TABLE public.usuarios;
+--DROP TABLE public.responsavel;
+--DROP TABLE public.crianca;
+--DROP TABLE public.cuidador;
+
+
+CREATE TABLE public.crianca (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
     data_de_nascimento DATE NOT NULL,
-
-    responsavel_1 VARCHAR(100) NOT NULL,
-    telefone_responsavel_1 VARCHAR(20),
-    profissao_responsavel_1 VARCHAR(100),
-    local_trabalho_responsavel_1 VARCHAR(100),
-    telefone_trabalho_responsavel_1 VARCHAR(20),
-
-    responsavel_2 VARCHAR(100),
-    telefone_responsavel_2 VARCHAR(20),
-    profissao_responsavel_2 VARCHAR(100),
-    local_trabalho_responsavel_2 VARCHAR(100),
-    telefone_trabalho_responsavel_2 VARCHAR(20),
 
     endereco TEXT,
 
-    mora_com_quem ENUM('PAIS', 'AVÓS', 'OUTROS'),
-    tem_irmaos ENUM('SIM', 'NÃO'),
+    mora_com_quem VARCHAR(10) CHECK (mora_com_quem IN ('PAIS', 'AVÓS', 'OUTROS')),
+    tem_irmaos VARCHAR(3) CHECK (tem_irmaos IN ('SIM', 'NÃO')),
 
-    problema_saude ENUM('SIM', 'NÃO'),
+    problema_saude VARCHAR(3) CHECK (problema_saude IN ('SIM', 'NÃO')),
     problema_saude_qual TEXT,
 
-    medicamento_continuo ENUM('SIM', 'NÃO'),
+    medicamento_continuo VARCHAR(3) CHECK (medicamento_continuo IN ('SIM', 'NÃO')),
     medicamento_qual TEXT,
 
-    tem_alergias ENUM('SIM', 'NÃO'),
+    tem_alergias VARCHAR(3) CHECK (tem_alergias IN ('SIM', 'NÃO')),
     alergias_qual TEXT
 );
 
-CREATE TABLE usuarios (
-    usuario_id INT PRIMARY KEY AUTO_INCREMENT,
-    username VARCHAR(50) UNIQUE,
-    password_hash TEXT,
-    role ENUM('CUIDADOR', 'RESPONSAVEL'),
-    crianca_id INT,
-    FOREIGN KEY (crianca_id) REFERENCES crianca(crianca_id)
+
+CREATE TABLE public.responsavel (
+	id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    telefone VARCHAR(20),
+    profissao VARCHAR(100),
+    local_trabalho VARCHAR(100),
+    telefone_trabalho VARCHAR(20),
+	crianca_id INTEGER,
+    FOREIGN KEY (crianca_id) REFERENCES crianca(id)
 );
 
-CREATE TABLE registro_diario (
-    registro_id INT PRIMARY KEY AUTO_INCREMENT,
-    crianca_id INT NOT NULL,
+CREATE TABLE public.cuidador (
+	id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    telefone VARCHAR(20),
+    profissao VARCHAR(100)
+);
+
+
+CREATE TABLE public.usuarios (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE,
+    password_hash TEXT,
+    role VARCHAR(15) CHECK (role IN ('CUIDADOR', 'RESPONSAVEL')),
+    cuidador_id INTEGER,
+    responsavel_id INTEGER,
+    FOREIGN KEY (cuidador_id) REFERENCES cuidador(id),
+    FOREIGN KEY (responsavel_id) REFERENCES responsavel(id)
+);
+
+CREATE TABLE public.registro_diario (
+    id SERIAL PRIMARY KEY,
+    crianca_id INTEGER NOT NULL,
+    cuidador_id INTEGER NOT NULL,
     data DATE NOT NULL,
 
-    cafe_da_manha ENUM('NADA', 'POUCO', 'TUDO'),
-    almoco        ENUM('NADA', 'POUCO', 'TUDO'),
-    colacao       ENUM('NADA', 'POUCO', 'TUDO'),
-    jantar        ENUM('NADA', 'POUCO', 'TUDO'),
+    cafe_da_manha VARCHAR(6) CHECK (cafe_da_manha IN ('NADA', 'POUCO', 'TUDO')),
+    almoco        VARCHAR(6) CHECK (almoco IN ('NADA', 'POUCO', 'TUDO')),
+    colacao       VARCHAR(6) CHECK (colacao IN ('NADA', 'POUCO', 'TUDO')),
+    jantar        VARCHAR(6) CHECK (jantar IN ('NADA', 'POUCO', 'TUDO')),
 
-    evacuacao_liquida ENUM('1', '2', '3', '4'),
-    evacuacao_pastosa ENUM('1', '2', '3', '4'),
+    evacuacao_liquida VARCHAR(1) CHECK (evacuacao_liquida IN ('1', '2', '3', '4')),
+    evacuacao_pastosa VARCHAR(1) CHECK (evacuacao_pastosa IN ('1', '2', '3', '4')),
 
-    banho ENUM('SIM', 'NÃO'),
-    sono ENUM('TRANQUILO', 'AGITADO', 'NÃO DORMIU'),
+    banho VARCHAR(3) CHECK (banho IN ('SIM', 'NÃO')),
+    sono VARCHAR(12) CHECK (sono IN ('TRANQUILO', 'AGITADO', 'NÃO DORMIU')),
 
     observacoes TEXT,
     assinatura VARCHAR(100),
 
-    FOREIGN KEY (crianca_id) REFERENCES crianca(crianca_id)
+    FOREIGN KEY (crianca_id) REFERENCES crianca(id),
+    FOREIGN KEY (cuidador_id) REFERENCES cuidador(id)
 );
